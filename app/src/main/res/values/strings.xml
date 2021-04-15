@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">Etruck</string>
+    <!--Fragment Map-->
+    <string name="LOCATION_NOT_GIVEN">Please Give Location Permission</string>
+    <string name="map_api_key">AIzaSyB4_xaRsjIyHQMI-gtsUAEc4PnSNLk5-dY</string>
+</resources>
