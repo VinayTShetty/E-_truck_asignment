@@ -8,17 +8,21 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
@@ -26,9 +30,15 @@ import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.net.PlacesClient;
 import com.map.etruck.BaseFragmet.BaseFragment;
 import com.map.etruck.DialogHelper.DialogUtility;
 import com.map.etruck.R;
+import java.util.List;
 
 public class MapFragmet extends BaseFragment implements
         OnMapReadyCallback{
@@ -37,6 +47,39 @@ public class MapFragmet extends BaseFragment implements
     MapView mapView;
     GoogleMap googleMap;
     private final int LocationPermissionRequestCode = 100;
+
+    private static final String TAG = MapFragmet.class.getSimpleName();
+    private GoogleMap map;
+    private CameraPosition cameraPosition;
+
+    // The entry point to the Places API.
+    private PlacesClient placesClient;
+
+    // The entry point to the Fused Location Provider.
+    private FusedLocationProviderClient fusedLocationProviderClient;
+
+    // A default location (Sydney, Australia) and default zoom to use when location permission is
+    // not granted.
+    private final LatLng defaultLocation = new LatLng(-33.8523341, 151.2106085);
+    private static final int DEFAULT_ZOOM = 15;
+    private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
+    private boolean locationPermissionGranted;
+
+    // The geographical location where the device is currently located. That is, the last-known
+    // location retrieved by the Fused Location Provider.
+    private Location lastKnownLocation;
+
+    // Keys for storing activity state.
+    private static final String KEY_CAMERA_POSITION = "camera_position";
+    private static final String KEY_LOCATION = "location";
+
+    // Used for selecting the current place.
+    private static final int M_MAX_ENTRIES = 5;
+    private String[] likelyPlaceNames;
+    private String[] likelyPlaceAddresses;
+    private List[] likelyPlaceAttributions;
+    private LatLng[] likelyPlaceLatLngs;
+
 
     @Override
     public void onAttachFragment(@NonNull Fragment childFragment) {
@@ -51,7 +94,18 @@ public class MapFragmet extends BaseFragment implements
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+
+
+        if (savedInstanceState != null) {
+            lastKnownLocation = savedInstanceState.getParcelable(KEY_LOCATION);
+            cameraPosition = savedInstanceState.getParcelable(KEY_CAMERA_POSITION);
+        }
         mapFragmentView = inflater.inflate(R.layout.map_fragment, container, false);
+        Places.initialize(getActivity(), getString(R.string.map_api_key));
+        placesClient = Places.createClient(getActivity());
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getActivity());
+
+
         intializeViews(savedInstanceState);
         checkPermissionGiven(savedInstanceState);
         return mapFragmentView;
@@ -89,7 +143,32 @@ public class MapFragmet extends BaseFragment implements
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
+        this.map = map;
 
+        // Use a custom info window adapter to handle multiple lines of text in the
+        // info window contents.
+        this.map.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
+
+
+            @Override
+            public View getInfoWindow(Marker marker) {
+                return null;
+            }
+
+            @Override
+            public View getInfoContents(Marker marker) {
+                // Inflate the layouts for the info window, title and snippet.
+                View infoWindow = getLayoutInflater().inflate(R.layout.custom_info_contents, (FrameLayout) findViewById(R.id.map), false);
+
+                TextView title = infoWindow.findViewById(R.id.title);
+                title.setText(marker.getTitle());
+
+                TextView snippet = infoWindow.findViewById(R.id.snippet);
+                snippet.setText(marker.getSnippet());
+
+                return infoWindow;
+            }
+        });
     }
 
     private void intializeViews(Bundle bundleSavedinstanceState) {
@@ -169,7 +248,8 @@ public class MapFragmet extends BaseFragment implements
                 }
             }
         });
-
     }
+
+
 
 }
