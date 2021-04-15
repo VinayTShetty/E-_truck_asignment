@@ -153,13 +153,6 @@ public class MapFragmet extends BaseFragment implements
     }
     private void fetchLocation() {
         if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
             return;
         }
         Task<Location> task = fusedLocationProviderClient.getLastLocation();
@@ -170,7 +163,6 @@ public class MapFragmet extends BaseFragment implements
                     currentLocation = location;
                     double latitute=currentLocation.getLatitude();
                     double longitude=currentLocation.getLongitude();
-                   Toast.makeText(getActivity(), currentLocation.getLatitude() + "" + currentLocation.getLongitude(), Toast.LENGTH_SHORT).show();
                     LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
                     CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, 30);
                     googleMap.animateCamera(cameraUpdate);
@@ -225,7 +217,6 @@ public class MapFragmet extends BaseFragment implements
         googleMap.clear();
         googleMap.addMarker(new MarkerOptions()
                 .position(new LatLng(latitude,longitude))
-                .title("Wrong Turn!")
                 .icon(bitmapDescriptorFromVector(getActivity(), R.drawable.ic_delivery_truck)));
     }
     private BitmapDescriptor bitmapDescriptorFromVector(Context context, int vectorResId) {
