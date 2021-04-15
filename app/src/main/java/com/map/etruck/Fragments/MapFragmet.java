@@ -1,8 +1,11 @@
 package com.map.etruck.Fragments;
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,6 +29,11 @@ import com.google.android.gms.tasks.Task;
 import com.map.etruck.BaseFragmet.BaseFragment;
 import com.map.etruck.DialogHelper.DialogUtility;
 import com.map.etruck.R;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Locale;
+
 public class MapFragmet extends BaseFragment implements
         OnMapReadyCallback {
     private static final String TAG = MapFragmet.class.getSimpleName();
@@ -36,6 +44,8 @@ public class MapFragmet extends BaseFragment implements
     private GoogleMap googleMap;
     FusedLocationProviderClient fusedLocationProviderClient;
     Location currentLocation;
+    Geocoder geocoder;
+    List<Address> addresses;
     @Override
     public void onAttachFragment(@NonNull Fragment childFragment) {
         super.onAttachFragment(childFragment);
@@ -149,10 +159,13 @@ public class MapFragmet extends BaseFragment implements
             public void onSuccess(Location location) {
                 if (location != null) {
                     currentLocation = location;
+                    double latitute=currentLocation.getLatitude();
+                    double longitude=currentLocation.getLongitude();
                    Toast.makeText(getActivity(), currentLocation.getLatitude() + "" + currentLocation.getLongitude(), Toast.LENGTH_SHORT).show();
                     LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
                     CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, 30);
                     googleMap.animateCamera(cameraUpdate);
+                    getAddressFromLocation(latitute,longitude);
                 }
             }
         });
@@ -184,6 +197,22 @@ public class MapFragmet extends BaseFragment implements
                 fetchLocation();
             }
         });
+    }
+
+    private void getAddressFromLocation(double latitude,double longitude){
+        geocoder = new Geocoder(getActivity(), Locale.getDefault());
+        try {
+            addresses = geocoder.getFromLocation(latitude, longitude, 1);
+            String address = addresses.get(0).getAddressLine(0); // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
+            String city = addresses.get(0).getLocality();
+            String state = addresses.get(0).getAdminArea();
+            String country = addresses.get(0).getCountryName();
+            String postalCode = addresses.get(0).getPostalCode();
+            String knownName = addresses.get(0).getFeatureName();
+            Log.d(TAG, "getAddressFromLocation: "+address);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }
