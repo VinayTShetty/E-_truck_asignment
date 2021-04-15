@@ -31,13 +31,20 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.api.model.PlaceLikelihood;
+import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest;
+import com.google.android.libraries.places.api.net.FindCurrentPlaceResponse;
 import com.google.android.libraries.places.api.net.PlacesClient;
 import com.map.etruck.BaseFragmet.BaseFragment;
 import com.map.etruck.DialogHelper.DialogUtility;
 import com.map.etruck.R;
+
+import java.util.Arrays;
 import java.util.List;
 
 public class MapFragmet extends BaseFragment implements
@@ -143,10 +150,11 @@ public class MapFragmet extends BaseFragment implements
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        this.map = map;
+        this.map = googleMap;
 
         // Use a custom info window adapter to handle multiple lines of text in the
         // info window contents.
+        showCurrentPlace();
         this.map.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
 
 
@@ -158,7 +166,7 @@ public class MapFragmet extends BaseFragment implements
             @Override
             public View getInfoContents(Marker marker) {
                 // Inflate the layouts for the info window, title and snippet.
-                View infoWindow = getLayoutInflater().inflate(R.layout.custom_info_contents, (FrameLayout) findViewById(R.id.map), false);
+                View infoWindow = getLayoutInflater().inflate(R.layout.custom_info_contents, (FrameLayout) mapFragmentView.findViewById(R.id.map_view_id), false);
 
                 TextView title = infoWindow.findViewById(R.id.title);
                 title.setText(marker.getTitle());
@@ -179,7 +187,8 @@ public class MapFragmet extends BaseFragment implements
     private void checkPermissionGiven(Bundle savedInstanceState) {
         if (isAdded()) {
             if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                setUpMap( savedInstanceState);
+               // setUpMap( savedInstanceState);
+                showCurrentPlace();
             } else {
                 requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LocationPermissionRequestCode);
             }
@@ -192,7 +201,7 @@ public class MapFragmet extends BaseFragment implements
         switch (requestCode) {
             case LocationPermissionRequestCode:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    setUpMap(bundleSavedinstanceState);
+                 //   setUpMap(bundleSavedinstanceState);
                 } else {
                     askPermission();
                 }
@@ -207,7 +216,7 @@ public class MapFragmet extends BaseFragment implements
         }
     }
 
-    private void setUpMap(Bundle savedInstanceState) {
+    /*private void setUpMap(Bundle savedInstanceState) {
         mapView.onCreate(savedInstanceState);
         mapView.onResume();
         try {
@@ -248,8 +257,83 @@ public class MapFragmet extends BaseFragment implements
                 }
             }
         });
+    }*/
+
+    private void showCurrentPlace() {
+        if (map == null) {
+            return;
+        }
+
+        if (true) {
+            // Use fields to define the data types to return.
+            List<Place.Field> placeFields = Arrays.asList(Place.Field.NAME, Place.Field.ADDRESS,
+                    Place.Field.LAT_LNG);
+
+            // Use the builder to create a FindCurrentPlaceRequest.
+            FindCurrentPlaceRequest request =
+                    FindCurrentPlaceRequest.newInstance(placeFields);
+
+            // Get the likely places - that is, the businesses and other points of interest that
+            // are the best match for the device's current location.
+            @SuppressWarnings("MissingPermission") final
+            Task<FindCurrentPlaceResponse> placeResult =
+                    placesClient.findCurrentPlace(request);
+            placeResult.addOnCompleteListener (new OnCompleteListener<FindCurrentPlaceResponse>() {
+                @Override
+                public void onComplete(@NonNull Task<FindCurrentPlaceResponse> task) {
+                    if (task.isSuccessful() && task.getResult() != null) {
+                        FindCurrentPlaceResponse likelyPlaces = task.getResult();
+
+                        // Set the count, handling cases where less than 5 entries are returned.
+                        int count;
+                        if (likelyPlaces.getPlaceLikelihoods().size() < M_MAX_ENTRIES) {
+                            count = likelyPlaces.getPlaceLikelihoods().size();
+                        } else {
+                            count = M_MAX_ENTRIES;
+                        }
+
+                        int i = 0;
+                        likelyPlaceNames = new String[count];
+                        likelyPlaceAddresses = new String[count];
+                        likelyPlaceAttributions = new List[count];
+                        likelyPlaceLatLngs = new LatLng[count];
+
+                        for (PlaceLikelihood placeLikelihood : likelyPlaces.getPlaceLikelihoods()) {
+                            // Build a list of likely places to show the user.
+                            likelyPlaceNames[i] = placeLikelihood.getPlace().getName();
+                            likelyPlaceAddresses[i] = placeLikelihood.getPlace().getAddress();
+                            likelyPlaceAttributions[i] = placeLikelihood.getPlace()
+                                    .getAttributions();
+                            likelyPlaceLatLngs[i] = placeLikelihood.getPlace().getLatLng();
+
+                            i++;
+                            if (i > (count - 1)) {
+                                break;
+                            }
+                        }
+
+                        // Show a dialog offering the user the list of likely places, and add a
+                        // marker at the selected place.
+                       // MapsActivityCurrentPlace.this.openPlacesDialog();
+                    }
+                    else {
+                        Log.e(TAG, "Exception: %s", task.getException());
+                    }
+                }
+            });
+        } else {
+            // The user has not granted permission.
+            Log.i(TAG, "The user did not grant location permission.");
+
+            // Add a default marker, because the user hasn't selected a place.
+            map.addMarker(new MarkerOptions()
+                    .title("No Title")
+                    .position(defaultLocation)
+                    .snippet("Default no snipper"));
+
+            // Prompt the user for permission.
+            askPermission();
+        }
     }
-
-
 
 }
