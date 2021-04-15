@@ -14,8 +14,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
-
-import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
@@ -32,12 +30,14 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.map.etruck.BaseFragmet.BaseFragment;
 import com.map.etruck.DialogHelper.DialogUtility;
 import com.map.etruck.R;
+import com.map.etruck.UI_Helper.CustomInfoWindowAdapter;
 
 import java.io.IOException;
 import java.util.List;
@@ -215,9 +215,10 @@ public class MapFragmet extends BaseFragment implements
             e.printStackTrace();
         }
         googleMap.clear();
-        googleMap.addMarker(new MarkerOptions()
+       /* googleMap.addMarker(new MarkerOptions()
                 .position(new LatLng(latitude,longitude))
-                .icon(bitmapDescriptorFromVector(getActivity(), R.drawable.ic_delivery_truck)));
+                .icon(bitmapDescriptorFromVector(getActivity(), R.drawable.ic_delivery_truck)));*/
+        setCustomInfoWindowAdapter(latitude,longitude,""+addresses.get(0).getAddressLine(0));
     }
     private BitmapDescriptor bitmapDescriptorFromVector(Context context, int vectorResId) {
         Drawable vectorDrawable = ContextCompat.getDrawable(context, vectorResId);
@@ -226,6 +227,23 @@ public class MapFragmet extends BaseFragment implements
         Canvas canvas = new Canvas(bitmap);
         vectorDrawable.draw(canvas);
         return BitmapDescriptorFactory.fromBitmap(bitmap);
+    }
+    private void setCustomInfoWindowAdapter(double lat,double longgi,String ad){
+
+        googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+        googleMap.getUiSettings().setZoomControlsEnabled(true);
+
+        /*googleMap.addMarker(new MarkerOptions()
+                .position(new LatLng(lat,longgi))
+                .icon(bitmapDescriptorFromVector(getActivity(), R.drawable.ic_delivery_truck)));*/
+        MarkerOptions markerOpt = new MarkerOptions();
+                        markerOpt.position(new LatLng(lat,longgi));
+                        markerOpt.title(ad);
+        markerOpt.icon(bitmapDescriptorFromVector(getActivity(), R.drawable.ic_delivery_truck));
+        CustomInfoWindowAdapter customInfoWindowAdapter=new CustomInfoWindowAdapter(getActivity());
+        googleMap.setInfoWindowAdapter(customInfoWindowAdapter);
+
+        googleMap.addMarker(markerOpt).showInfoWindow();
     }
 
 }
