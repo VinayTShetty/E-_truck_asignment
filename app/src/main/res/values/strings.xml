@@ -2,5 +2,6 @@
     <string name="app_name">Etruck</string>
     <!--Fragment Map-->
     <string name="LOCATION_NOT_GIVEN">Please Give Location Permission</string>
-    <string name="map_api_key">AIzaSyB4_xaRsjIyHQMI-gtsUAEc4PnSNLk5-dY</string>
+  <!--  <string name="map_api_key">AIzaSyB4_xaRsjIyHQMI-gtsUAEc4PnSNLk5-dY</string>-->
+    <string name="map_api_key">AIzaSyDCeoSFNd7Or_TyHL0jY1CULzLEoNTD77E</string>
 </resources>

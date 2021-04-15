@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "761980252992",
+    "project_id": "etruck-310811",
+    "storage_bucket": "etruck-310811.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:761980252992:android:ed7d9b93c288de9300c0a5",
+        "android_client_info": {
+          "package_name": "com.map.etruck"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "761980252992-sv342aerq2ftdgqgkap27tges4rrn0i5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.map.etruck",
+            "certificate_hash": "9accdd2237f791e34f6b7fd5e66351e98f76f974"
+          }
+        },
+        {
+          "client_id": "761980252992-ctqhb8ksierqp0os3798n9t4gd9pr2qs.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDCeoSFNd7Or_TyHL0jY1CULzLEoNTD77E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "761980252992-ctqhb8ksierqp0os3798n9t4gd9pr2qs.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
