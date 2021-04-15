@@ -37,12 +37,12 @@ import com.google.android.gms.tasks.Task;
 import com.map.etruck.BaseFragmet.BaseFragment;
 import com.map.etruck.DialogHelper.DialogUtility;
 import com.map.etruck.R;
+import com.map.etruck.UI_Helper.BitMapImage_Projector;
 import com.map.etruck.UI_Helper.CustomInfoWindowAdapter;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
-
 public class MapFragmet extends BaseFragment implements
         OnMapReadyCallback {
     private static final String TAG = MapFragmet.class.getSimpleName();
@@ -183,17 +183,10 @@ public class MapFragmet extends BaseFragment implements
         mapView.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(GoogleMap mMap) {
-                googleMap=mMap;
                 if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    // TODO: Consider calling
-                    //    ActivityCompat#requestPermissions
-                    // here to request the missing permissions, and then overriding
-                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                    //                                          int[] grantResults)
-                    // to handle the case where the user grants the permission. See the documentation
-                    // for ActivityCompat#requestPermissions for more details.
                     return;
                 }
+                googleMap=mMap;
                 mMap.setMyLocationEnabled(true);
                 fetchLocation();
             }
@@ -204,45 +197,22 @@ public class MapFragmet extends BaseFragment implements
         geocoder = new Geocoder(getActivity(), Locale.getDefault());
         try {
             addresses = geocoder.getFromLocation(latitude, longitude, 1);
-            String address = addresses.get(0).getAddressLine(0); // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
-            String city = addresses.get(0).getLocality();
-            String state = addresses.get(0).getAdminArea();
-            String country = addresses.get(0).getCountryName();
-            String postalCode = addresses.get(0).getPostalCode();
-            String knownName = addresses.get(0).getFeatureName();
-            Log.d(TAG, "getAddressFromLocation: "+address);
         } catch (IOException e) {
             e.printStackTrace();
         }
         googleMap.clear();
-       /* googleMap.addMarker(new MarkerOptions()
-                .position(new LatLng(latitude,longitude))
-                .icon(bitmapDescriptorFromVector(getActivity(), R.drawable.ic_delivery_truck)));*/
         setCustomInfoWindowAdapter(latitude,longitude,""+addresses.get(0).getAddressLine(0));
     }
-    private BitmapDescriptor bitmapDescriptorFromVector(Context context, int vectorResId) {
-        Drawable vectorDrawable = ContextCompat.getDrawable(context, vectorResId);
-        vectorDrawable.setBounds(0, 0, vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight());
-        Bitmap bitmap = Bitmap.createBitmap(vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
-        vectorDrawable.draw(canvas);
-        return BitmapDescriptorFactory.fromBitmap(bitmap);
-    }
-    private void setCustomInfoWindowAdapter(double lat,double longgi,String ad){
 
+    private void setCustomInfoWindowAdapter(double lat,double longgi,String ad){
         googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
         googleMap.getUiSettings().setZoomControlsEnabled(true);
-
-        /*googleMap.addMarker(new MarkerOptions()
-                .position(new LatLng(lat,longgi))
-                .icon(bitmapDescriptorFromVector(getActivity(), R.drawable.ic_delivery_truck)));*/
         MarkerOptions markerOpt = new MarkerOptions();
                         markerOpt.position(new LatLng(lat,longgi));
                         markerOpt.title(ad);
-        markerOpt.icon(bitmapDescriptorFromVector(getActivity(), R.drawable.ic_delivery_truck));
+        markerOpt.icon(BitMapImage_Projector.bitmapDescriptorFromVector(getActivity(), R.drawable.ic_delivery_truck));
         CustomInfoWindowAdapter customInfoWindowAdapter=new CustomInfoWindowAdapter(getActivity());
         googleMap.setInfoWindowAdapter(customInfoWindowAdapter);
-
         googleMap.addMarker(markerOpt).showInfoWindow();
     }
 
